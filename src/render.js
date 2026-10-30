@@ -11,10 +11,32 @@ const getEngine = type => {
   return htmlLiquid || (htmlLiquid = new Liquid({ outputEscape: 'escape', strictFilters: true }));
 };
 
+const CACHE_SIZE = 500;
+const parsedCache = new Map();
+
+// 解析结果按 type + 模版原文做 LRU 缓存，高频发送同一模版时免去重复解析
+const parseCached = (type, template) => {
+  const key = `${type}\u0000${template}`;
+  let parsed = parsedCache.get(key);
+  if (parsed) {
+    parsedCache.delete(key);
+  } else {
+    parsed = getEngine(type).parse(template);
+    if (parsedCache.size >= CACHE_SIZE) {
+      parsedCache.delete(parsedCache.keys().next().value);
+    }
+  }
+  parsedCache.set(key, parsed);
+  return parsed;
+};
+
 /**
  * 用数据渲染模版；type 为 html 时变量输出做 HTML 转义（{{ name | raw }} 除外），text 时原样输出
  */
-export const renderTemplate = (template, data = {}, { type = 'html' } = {}) => getEngine(type).parseAndRenderSync(String(template ?? ''), data);
+export const renderTemplate = (template, data = {}, { type = 'html' } = {}) => {
+  const engineType = type === 'text' ? 'text' : 'html';
+  return getEngine(engineType).renderSync(parseCached(engineType, String(template ?? '')), data);
+};
 
 const escapeHtml = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
