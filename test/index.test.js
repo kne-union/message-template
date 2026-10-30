@@ -127,6 +127,18 @@ test('textToHtml / htmlToText 往返', () => {
   assert.equal(htmlToText(''), '');
 });
 
+test('renderTemplate 重复渲染同一模版结果稳定，html / text 缓存互不干扰', () => {
+  const tpl = '<p>{{ name }}</p>';
+  assert.equal(renderTemplate(tpl, { name: '<b>' }), '<p>&lt;b&gt;</p>');
+  assert.equal(renderTemplate(tpl, { name: 'Tom' }), '<p>Tom</p>');
+  assert.equal(renderTemplate(tpl, { name: '<b>' }, { type: 'text' }), '<p><b></p>');
+  assert.equal(renderTemplate(tpl, { name: '<i>' }), '<p>&lt;i&gt;</p>');
+  for (let i = 0; i < 600; i++) {
+    assert.equal(renderTemplate(`{{ v }}-${i}`, { v: i }, { type: 'text' }), `${i}-${i}`);
+  }
+  assert.equal(renderTemplate(tpl, { name: 'Ann' }), '<p>Ann</p>');
+});
+
 test('htmlToText 处理完整 HTML 邮件文档', () => {
   const html = `<!DOCTYPE html>
 <html>
