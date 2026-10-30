@@ -228,7 +228,7 @@ render(<TextExample />);
 |----|----|-----|----|
 | renderTemplate | `(template: string, data?: object, options?: { type?: 'html' \| 'text' })` | string | 用数据渲染模板。`type` 默认 `html`：`{{ name }}` 做 HTML 转义、`{{ name \| raw }}` 原样输出；`text` 时不转义，用于短信等纯文本 |
 | textToHtml | `(text: string)` | string | 纯文本转编辑器 HTML：每行一个 `<p>`，空行用 `&nbsp;` 占位，`< > &` 转义 |
-| htmlToText | `(html: string)` | string | 编辑器 HTML 转纯文本：顶层每个块一行，`<br>` 换行，实体解码，空段落输出空行；不依赖 DOM |
+| htmlToText | `(html: string)` | string | HTML 转纯文本：块级元素各占一行，`<br>` 换行，实体解码，空段落输出空行；完整邮件文档中的 `head` / `style` / `script` 与注释会被忽略，源码排版的换行缩进按空格处理；不依赖 DOM |
 
 #### 校验
 
