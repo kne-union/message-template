@@ -1,0 +1,53 @@
+{
+  "isFull": false,
+  "list": [
+    {
+      "title": "渲染模板",
+      "description": "renderTemplate 渲染面试邀请邮件与短信：HTML 模式转义变量、raw 原样输出，文本模式不转义；先用 validateTemplateHtml 校验",
+      "code": "./base.js",
+      "scope": [
+        {
+          "name": "_MessageTemplate",
+          "packageName": "@kne/current-lib_message-template",
+          "importStatement": "import * as _MessageTemplate from \"@kne/message-template\""
+        },
+        {
+          "name": "antd",
+          "packageName": "antd"
+        }
+      ]
+    },
+    {
+      "title": "条件表达式",
+      "description": "在结构化条件和 Liquid 表达式之间双向转换，并生成展示文案",
+      "code": "./condition.js",
+      "scope": [
+        {
+          "name": "_MessageTemplate",
+          "packageName": "@kne/current-lib_message-template",
+          "importStatement": "import * as _MessageTemplate from \"@kne/message-template\""
+        },
+        {
+          "name": "antd",
+          "packageName": "antd"
+        }
+      ]
+    },
+    {
+      "title": "HTML 与纯文本互转",
+      "description": "htmlToText / textToHtml 在编辑器 HTML 与短信纯文本之间转换，不依赖 DOM，Node 端同样可用",
+      "code": "./text.js",
+      "scope": [
+        {
+          "name": "_MessageTemplate",
+          "packageName": "@kne/current-lib_message-template",
+          "importStatement": "import * as _MessageTemplate from \"@kne/message-template\""
+        },
+        {
+          "name": "antd",
+          "packageName": "antd"
+        }
+      ]
+    }
+  ]
+}
