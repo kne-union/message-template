@@ -32,18 +32,100 @@ export const textToHtml = text => {
     .join('');
 };
 
-const readInlineText = node => {
-  if (node.type === 'text') {
-    return node.data;
-  }
-  if (node.name === 'br') {
-    return '\n';
-  }
-  return (node.children || []).map(readInlineText).join('');
+const SKIP_TAGS = new Set(['head', 'title', 'style', 'script', 'meta', 'link', 'noscript', 'template']);
+
+const BLOCK_TAGS = new Set([
+  'html',
+  'body',
+  'address',
+  'article',
+  'aside',
+  'blockquote',
+  'center',
+  'dd',
+  'div',
+  'dl',
+  'dt',
+  'figcaption',
+  'figure',
+  'footer',
+  'form',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'header',
+  'hr',
+  'li',
+  'main',
+  'nav',
+  'ol',
+  'p',
+  'pre',
+  'section',
+  'table',
+  'tbody',
+  'td',
+  'tfoot',
+  'th',
+  'thead',
+  'tr',
+  'ul'
+]);
+
+const LINE_BREAK = '\u0000';
+
+// 源码排版产生的换行缩进按空白处理，<br> 用占位符保留为真实换行
+const normalizeLine = line =>
+  line
+    .replace(/^\s*\n\s*/, '')
+    .replace(/\s*\n\s*$/, '')
+    .replace(/\s*\n\s*/g, ' ')
+    .replace(new RegExp(LINE_BREAK, 'g'), '\n')
+    .replace(/\u00a0/g, ' ');
+
+const collectLines = (nodes, lines) => {
+  let buffer = null;
+  const flush = () => {
+    if (buffer !== null && !/^\s*$/.test(buffer.replace(/\u00a0/g, 'x'))) {
+      const line = normalizeLine(buffer);
+      lines.push(line.trim() ? line : '');
+    }
+    buffer = null;
+  };
+  const appendInline = node => {
+    if (node.type === 'text') {
+      buffer = (buffer ?? '') + node.data;
+      return;
+    }
+    if (node.type !== 'tag' || SKIP_TAGS.has(node.name)) {
+      return;
+    }
+    if (node.name === 'br') {
+      buffer = (buffer ?? '') + LINE_BREAK;
+      return;
+    }
+    if (BLOCK_TAGS.has(node.name)) {
+      flush();
+      const before = lines.length;
+      collectLines(node.children || [], lines);
+      if (lines.length === before && node.name === 'p') {
+        lines.push('');
+      }
+      return;
+    }
+    (node.children || []).forEach(appendInline);
+  };
+  nodes.forEach(appendInline);
+  flush();
+  return lines;
 };
 
 /**
- * 编辑器 HTML → 纯文本：顶层每个块一行，<br> 换行，实体解码
+ * HTML → 纯文本：块级元素各占一行，<br> 换行，实体解码；
+ * 完整邮件文档中的 head / style / script 及注释会被忽略
  */
 export const htmlToText = html => {
   const source = String(html ?? '');
@@ -51,12 +133,5 @@ export const htmlToText = html => {
     return '';
   }
   const doc = parseDocument(source, { decodeEntities: true });
-  return doc.children
-    .filter(node => node.type === 'text' || node.type === 'tag')
-    .filter(node => !(node.type === 'text' && /^\s*\n\s*$/.test(node.data)))
-    .map(node => {
-      const line = readInlineText(node).replace(/\u00a0/g, ' ');
-      return line.trim() ? line : '';
-    })
-    .join('\n');
+  return collectLines(doc.children, []).join('\n');
 };

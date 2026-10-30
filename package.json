@@ -1,6 +1,6 @@
 {
   "name": "@kne/message-template",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "邮件 / 短信等消息模板工具：基于 Liquid 的变量与条件语法定义、渲染、HTML 与纯文本互转，前端与 Node 端通用",
   "syntax": {
     "esmodules": true

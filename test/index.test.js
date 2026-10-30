@@ -126,3 +126,29 @@ test('textToHtml / htmlToText 往返', () => {
   assert.equal(textToHtml(''), '');
   assert.equal(htmlToText(''), '');
 });
+
+test('htmlToText 处理完整 HTML 邮件文档', () => {
+  const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>欢迎</title>
+    <style>p { color: red; }</style>
+  </head>
+  <body>
+    <!-- 页头 -->
+    <div class="wrap">
+      <h1>你好，Alice</h1>
+      <p>
+        欢迎加入 <strong>Leapin</strong>，
+        请查收。
+      </p>
+      <table><tr><td>账号</td></tr><tr><td>alice@example.com</td></tr></table>
+    </div>
+    <script>alert(1)</script>
+  </body>
+</html>`;
+  assert.equal(htmlToText(html), '你好，Alice\n欢迎加入 Leapin， 请查收。\n账号\nalice@example.com');
+  assert.equal(htmlToText('<div><p>a</p><p>&nbsp;</p><p>b<br>c</p></div>'), 'a\n\nb\nc');
+  assert.equal(htmlToText('a<strong>b</strong>'), 'ab');
+});
